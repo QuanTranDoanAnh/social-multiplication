@@ -1,5 +1,6 @@
 package microservices.book.multiplication.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -18,7 +19,7 @@ import microservices.book.multiplication.repository.UserRepository;
 public class MultiplicationServiceImpl implements MultiplicationService {
 
 	private RandomGeneratorService randomGeneratorService;
-	private MultiplicationResultAttemptRepository multiplicationResultAttemptRepository;
+	private MultiplicationResultAttemptRepository attemptRepository;
 	private UserRepository userRepository;
 	
 	@Autowired
@@ -26,7 +27,7 @@ public class MultiplicationServiceImpl implements MultiplicationService {
 			final MultiplicationResultAttemptRepository multiplicationResultAttemptRepository,
 			final UserRepository userRepository) {
 		this.randomGeneratorService = randomGeneratorService;
-		this.multiplicationResultAttemptRepository = multiplicationResultAttemptRepository;
+		this.attemptRepository = multiplicationResultAttemptRepository;
 		this.userRepository = userRepository;
 	}
 	
@@ -52,7 +53,15 @@ public class MultiplicationServiceImpl implements MultiplicationService {
 		// Creates a copy, now setting the 'correct' field accordingly
 		MultiplicationResultAttempt checkedAttempt = new MultiplicationResultAttempt(user.orElse(attempt.getUser()), attempt.getMultiplication(), attempt.getResultAttempt(), correct);
 		
+		// Stores the attempt
+		attemptRepository.save(checkedAttempt);
+		
 		return checkedAttempt.isCorrect();
+	}
+	
+	@Override
+	public List<MultiplicationResultAttempt> getStatsForUser(String userAlias) {
+		return attemptRepository.findTop5ByUserAliasOrderByIdDesc(userAlias);
 	}
 
 }
