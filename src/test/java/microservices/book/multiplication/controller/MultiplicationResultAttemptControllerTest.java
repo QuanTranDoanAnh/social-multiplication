@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -60,7 +61,7 @@ public class MultiplicationResultAttemptControllerTest {
 
 		User user = new User("john");
 		Multiplication multiplication = new Multiplication(50, 70);
-		MultiplicationResultAttempt attempt = new MultiplicationResultAttempt(user, multiplication, 3500);
+		MultiplicationResultAttempt attempt = new MultiplicationResultAttempt(user, multiplication, 3500, correct);
 
 		// when
 		MockHttpServletResponse response = mvc.perform(
@@ -68,6 +69,8 @@ public class MultiplicationResultAttemptControllerTest {
 				.andReturn().getResponse();
 		
 		// then
-		assertThat(response.getContentAsString()).isEqualTo(jsonResponse.write(new ResultResponse(correct)).getJson());
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).isEqualTo(jsonResult.write(
+				new MultiplicationResultAttempt(attempt.getUser(), attempt.getMultiplication(), attempt.getResultAttempt(), correct)).getJson());
 	}
 }
